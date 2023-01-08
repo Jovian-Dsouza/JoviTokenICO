@@ -1,98 +1,87 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { ethers } from "ethers";
 import './styles/App.css';
 import twitterLogo from './assets/twitter-logo.svg';
-//import myEpicNft from './assets/MyEpicNFT.json';
+import JoviToken from './assets/JoviToken.json'
+import JoviTokenCrowdsale from './assets/JoviTokenCrowdsale.json';
 
 // Constants
+const TOKEN_ADDRESS = '0x3CF0E053EE1b554E5054300B56EBa1EaD7162a25';
+const CROWDSALE_ADDRESS = '0xfD8c0325BA3520bCF9399d7EACBAe8cb00369765';
 const TWITTER_HANDLE = 'DsouzaJovian';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
-const App = () => {
+function Footer() {
+  return (
+    <div className="footer-container">
+      <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
+      <a
+        className="footer-text"
+        href={TWITTER_LINK}
+        target="_blank"
+        rel="noreferrer"
+      > {`built by @${TWITTER_HANDLE}`} </a>
+    </div>
+  );
+}
+
+function App() {
 
   const [currentAccount, setCurrentAccount] = useState("");
-  
-  const checkIfWalletIsConnected =  async () => {
+
+  const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
-    if(!ethereum){
+    if (!ethereum) {
       console.log("Make sure you have metamask");
       return;
     }
-    else{
+    else {
       console.log("We have a ethereum object", ethereum);
     }
 
-    const accounts = await ethereum.request({method: 'eth_accounts'});
+    const accounts = await ethereum.request({ method: 'eth_accounts' });
 
-    if(accounts.length != 0){
+    if (accounts.length != 0) {
       const account = accounts[0]
       console.log("Found an authorized account", account);
       setCurrentAccount(account);
-      setupEventListner();
     }
-    else{
+    else {
       console.log("Could not find authorized account");
     }
   }
 
   const connectWallet = async () => {
-    try{
-      const {ethereum} = window;
-      if(!ethereum){
+    try {
+      const { ethereum } = window;
+      if (!ethereum) {
         console.log("Get Metamask");
         return;
       }
-      const accounts = await ethereum.request({method: 'eth_requestAccounts'});
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       setCurrentAccount(accounts[0]);
-      setupEventListener();
     }
-    catch(error) {
+    catch (error) {
       console.log(error);
     }
   }
 
-  const setupEventListener = async () => {
-    try {
-      const {ethereum} = window;
-
-      if(ethereum){
-        const provider = new ethers.providers.Web3Provider(ethereum)
-        const signer = provider.getSigner();
-        const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer)
-
-        connectedContract.on("NewEpicNFTMinted", (from, token) => {
-          console.log(from, tokenId.toNumber())
-          alert(`Hey there! We've minted your NFT and sent it to your wallet. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`)
-        })
-
-         console.log("Setup event listener!")
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  
-  const askContractToMintNft = async () => {
-    const CONTRACT_ADDRESS = "0xC3a39D1A0fa31293Cd370320ED476CABAC2aC1c0";
-
+  const buyToken = async () => {
     try {
       const { ethereum } = window;
 
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
-  
+        const crowdsale = new ethers.Contract(CROWDSALE_ADDRESS, JoviTokenCrowdsale.abi, signer);
+
         console.log("Going to pop wallet now to pay gas...")
-        let nftTxn = await connectedContract.makeAnEpicNFT();
-  
+        let nftTxn = await crowdsale.buyTokens(currentAccount, { value: ethers.utils.parseEther("0.003") });
+
         console.log("Mining...please wait.")
         await nftTxn.wait();
-        
         console.log(`Mined, see transaction: https://goerli.etherscan.io/tx/${nftTxn.hash}`);
-  
+
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -101,12 +90,45 @@ const App = () => {
       console.log(error)
     }
   }
-  
+
+  const checkBalance = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(TOKEN_ADDRESS, JoviToken.abi, signer);
+
+        console.log("Going to pop wallet now to pay gas...")
+        let balance = await contract.balanceOf(currentAccount);
+        console.log("Balance ", ethers.utils.formatEther(balance));
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }
+
   // Render Methods
   const renderNotConnectedContainer = () => (
-    <button onClick={connectWallet} className="cta-button connect-wallet-button">
-      Connect to Wallet
-    </button>
+
+    currentAccount === "" ? (
+      <button onClick={connectWallet} className="cta-button connect-wallet-button">
+        Connect Wallet
+      </button>
+    ) : (
+      <div>
+        <button onClick={buyToken} className="cta-button connect-wallet-button">
+          Buy JoviToken
+        </button>
+      </div>
+    )
+
+
   );
 
   useEffect(() => {
@@ -114,32 +136,33 @@ const App = () => {
   }, [])
 
   return (
-    <div className="App">
-      <div className="container">
+    <div className="App container-fluid">
+      <nav className="navbar">
         <div className="header-container">
           <p className="header gradient-text">JoviToken</p>
+        </div>
+
+        <div className="wallet-container">
+          {renderNotConnectedContainer()}
+        </div>
+
+
+      </nav>
+
+      <div className="row app-container">
+        <div className="col-6">
           <p className="sub-text">
-            Buy JoviToken Now, To Get Rich In The Future. 
+            Buy JoviToken Now, To Get Rich In The Future.
           </p>
-          
-          {currentAccount === "" ? (
-            renderNotConnectedContainer()
-          ) : (
-            <button onClick={askContractToMintNft} className="cta-button connect-wallet-button">
-              Mint NFT
-            </button>
-          )}
-          
+
+          <p className="sub-sub-text">
+            JoviToken is more than just a Defi Token. It's the best DeFi Token and you can learn here about this crypto
+          </p>
+
         </div>
-        <div className="footer-container">
-          <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
-          <a
-            className="footer-text"
-            href={TWITTER_LINK}
-            target="_blank"
-            rel="noreferrer"
-          > {`built by @${TWITTER_HANDLE}`} </a>
-        </div>
+
+        {Footer()}
+
       </div>
     </div>
   );
