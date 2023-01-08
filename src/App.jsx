@@ -131,6 +131,56 @@ function App() {
 
   );
 
+  function saleCard() {
+    return (
+      <div className="saleCard">
+        <div className='row sale-row'>
+          <p className="SaleHeader">Presale Ends in: </p>
+        </div>
+
+        <div className='row sale-row'>
+          <div className='col-3 timeBox'>
+            <p className='timeHeader'>15</p>
+            <p className='timeBody'>DAYS</p>
+          </div>
+
+          <div className='col-3 timeBox'>
+            <p className='timeHeader'>02</p>
+            <p className='timeBody'>HOURS</p>
+          </div>
+
+          <div className='col-3 timeBox'>
+            <p className='timeHeader'>45</p>
+            <p className='timeBody'>MINS</p>
+          </div>
+
+          <div className='col-3 timeBox'>
+            <p className='timeHeader'>53</p>
+            <p className='timeBody'>SECS</p>
+          </div>
+        </div>
+
+        <div className='row sale-row'>
+          <p className='saleDesc'>Token Name: <span class="saleDescVal">JOVI</span></p>
+          <p className='saleDesc'>Presale Supply: <span class="saleDescVal">100,000</span></p>
+          <p className='saleDesc'>Presale Price: <span class="saleDescVal">1 ETH = 500</span></p>
+        </div>
+
+        <div className='row sale-row'>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Enter Amount of Token" />
+          </div>
+        </div>
+
+        <div className='row sale-row'>
+          <button onClick={buyToken} className="cta-button connect-wallet-button">
+            Buy JoviToken
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     checkIfWalletIsConnected();
   }, [])
@@ -149,7 +199,7 @@ function App() {
 
       </nav>
 
-      <div className="row app-container">
+      <div className="row app-row app-container">
         <div className="col-6">
           <p className="sub-text">
             Buy JoviToken Now, To Get Rich In The Future.
@@ -159,6 +209,10 @@ function App() {
             JoviToken is more than just a Defi Token. It's the best DeFi Token and you can learn here about this crypto
           </p>
 
+        </div>
+
+        <div className="col-6">
+          {saleCard()}
         </div>
 
         {Footer()}

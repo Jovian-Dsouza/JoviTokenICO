@@ -5,7 +5,7 @@
   text-align: center;
   padding-top: 1rem;
   padding-left: 8rem;
-  padding-top: 1rem;
+  padding-bottom: 1rem;
   padding-right: 10rem;
   
 }
@@ -16,14 +16,10 @@
 
 .app-container {
   height: 100%;
-/*   background-color: #0d1116;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; */
 }
 
-.row {
-  padding-top: 4.5rem;
+.app-row {
+  padding-top: 3rem;
 }
 
 .header {
@@ -52,10 +48,104 @@
   -webkit-text-fill-color: transparent;
 }
 
+.saleCard {
+  color: white;
+  border-radius: 1rem;
+  background: -webkit-linear-gradient(right, #2d6827 0%, #194f67 60%) ;
+  height:100%;
+  padding: 1rem 1rem;
+  margin-left: 8rem;
+
+}
+
+.SaleHeader {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: left;
+  background: -webkit-linear-gradient(left, #75e66b, #3cb7ec);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-animation 2s ease infinite;
+
+}
+
+.sale-row {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  margin-left:0rem;
+  margin-right: 0rem;
+  width: auto;
+  padding: auto;
+}
+
+.timeBox {
+  background:  #35aee2;
+  border-radius: 0.5rem;
+  height: 100%;
+  width:auto;
+  margin: 0rem 0.5rem;
+  padding:  0rem 0.8rem;
+}
+
+.timeHeader {
+  font-size: 1.6rem;
+  font-weight: bold;
+  padding:  0px 0px;
+  margin: 0.5rem 0rem 0.1rem 0rem;
+  color: white;
+}
+
+.timeBody {
+  font-size: 0.5rem;
+  font-weight: bold;
+  padding: 0px 0px;
+  margin: 0.1rem 0rem 0.5rem 0rem;
+}
+
+.saleDesc {
+  font-size: 0.8rem;
+  text-align: left;
+  color: #a1f2ea;
+  margin: 0;
+}
+
+.saleDescVal {
+  font-weight: bold;
+  font-size: 0.95rem;
+  background: -webkit-linear-gradient(left, #b7c3b6 30%, #a1f2ea 60%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.input-group {
+  padding: 0;
+}
+
+.form-control::placeholder{
+  color: #a09c9c;  
+  font-size: 0.8rem;
+}
+
+.form-control {
+  border-radius: 5px;
+  background:  #2f586a;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-radius: 5px;
+  background:  #2f586a;
+  width: 100%;
+  color: #a09c9c; 
+}
+
 .cta-button {
   height: 45px;
   border: 0;
-  width: auto;
+  width: 100%;
   padding-left: 40px;
   padding-right: 40px;
   border-radius: 5px;
