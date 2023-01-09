@@ -136,6 +136,32 @@ function App() {
     }
   }
 
+  async function registerTotalSupplyChange(onChange) {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(TOKEN_ADDRESS, JoviToken.abi, signer);
+        const decimals = await contract.decimals();
+
+        contract.on("Transfer", (from, to, value, event) => {
+          if (from === ethers.constants.AddressZero) {
+            // const supplyIncrease = ethers.utils.formatUnits(value, decimals);
+            onChange();
+          }
+        })
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }
+
   async function getCrowdsaleData() {
     try {
       const { ethereum } = window;
@@ -245,32 +271,52 @@ function App() {
       setTokenAmount(e.target.value);
     }
 
-    function handleBuy(){
-      if(tokenAmount >= props.min && tokenAmount <= props.max){
+    function handleBuy() {
+      if (tokenAmount >= props.min && tokenAmount <= props.max) {
         buyToken(tokenAmount);
+        setTokenAmount("");
       }
     }
 
     return (
-      
+
       <div>
-          <div className='row sale-row'>
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text">ETH</span>
-                </div>
-      
-                <input type="number" min={props.min} max={props.max} step="any" onChange={handleAmountInput} value={tokenAmount} class="form-control" placeholder="Enter Amount" />
-      
+        <div className='row sale-row'>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">ETH</span>
             </div>
+
+            <input type="number" min={props.min} max={props.max} step="any" onChange={handleAmountInput} value={tokenAmount} class="form-control" placeholder="Enter Amount" />
+
           </div>
-    
-          <div className='row sale-row'>
-            <button onClick={handleBuy} className="cta-button connect-wallet-button">
-              Buy JoviToken
-            </button>
-          </div>
+        </div>
+
+        <div className='row sale-row'>
+          <button onClick={handleBuy} className="cta-button connect-wallet-button">
+            Buy JoviToken
+          </button>
+        </div>
       </div>
+    );
+  }
+
+
+  function TokenSupply(props) {
+    const [totalSupply, setTotalSupply] = useState("");
+    const [stateChange, setStateChange] = useState(false);
+
+    useEffect(() => {
+      (async () => {
+        await registerTotalSupplyChange(() => {
+          setStateChange(!stateChange);
+        });
+        setTotalSupply(await getTotalSupply());
+      })();
+    });
+
+    return (
+      <p className='saleDesc'>{props.stage} Supply: <span class="saleDescVal">{totalSupply}</span></p>
     );
   }
 
@@ -278,7 +324,6 @@ function App() {
     const [closingTime, setClosingTime] = useState("");
     const [stage, setStage] = useState("");
     const [rate, setRate] = useState();
-    const [totalSupply, setTotalSupply] = useState("");
     const [investorMinAmount, setInvestorMinAmount] = useState("");
     const [investorMaxAmount, setInvestorMaxAmount] = useState("");
 
@@ -291,8 +336,7 @@ function App() {
         setRate(crowdsaleData.rate);
         setInvestorMinAmount(crowdsaleData.investorMinAmount);
         setInvestorMaxAmount(crowdsaleData.investorMaxAmount);
-        getTotalSupply();
-        setTotalSupply(await getTotalSupply());
+
       })();
 
     });
@@ -307,13 +351,13 @@ function App() {
 
         <div className='row sale-row'>
           <p className='saleDesc'>Token Name: <span class="saleDescVal">JOVI</span></p>
-          <p className='saleDesc'>{stage} Supply: <span class="saleDescVal">{totalSupply}</span></p>
+          <TokenSupply stage={stage} />
           <p className='saleDesc'>{stage} Price: <span class="saleDescVal">1 ETH = {rate} JOVI</span></p>
         </div>
 
         <Buy min={investorMinAmount} max={investorMaxAmount} />
-        
-        
+
+
       </div>
     );
   }
