@@ -113,62 +113,164 @@ function App() {
     }
   }
 
+  async function getTotalSupply() {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(TOKEN_ADDRESS, JoviToken.abi, signer);
+
+        let totalSupply = await contract.totalSupply();
+        let decimals = await contract.decimals();
+        totalSupply = ethers.utils.formatUnits(totalSupply, decimals);
+        totalSupply = ethers.utils.commify(totalSupply);
+        
+        return totalSupply;
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }
+
+  async function getCrowdsaleData() {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const crowdsale = new ethers.Contract(CROWDSALE_ADDRESS, JoviTokenCrowdsale.abi, signer);
+
+        // closing time
+        let closingTime = await crowdsale.closingTime();
+        closingTime = closingTime.mul(1000).toNumber();
+
+        // stage
+        let stage = await crowdsale.stage();
+        if (stage == 0) {
+          stage = "Presale";
+        }
+        else {
+          stage = "ICO";
+        }
+
+        // rate
+        let rate = await crowdsale.rate();
+        rate = rate.toNumber();
+
+        return { closingTime, stage, rate };
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }
+
+
   // Render Methods
-  const renderNotConnectedContainer = () => (
-
-    currentAccount === "" ? (
-      <button onClick={connectWallet} className="cta-button connect-wallet-button">
-        Connect Wallet
-      </button>
-    ) : (
-      <div>
-        <button onClick={buyToken} className="cta-button connect-wallet-button">
-          Buy JoviToken
+  function Wallet() {
+    return (
+      currentAccount === "" ? (
+        <button onClick={connectWallet} className="cta-button connect-wallet-button">
+          Connect Wallet
         </button>
+      ) : (
+        <div>
+          <p className='wallet-address'><span className='bold'>Connected:</span> {currentAccount}</p>
+        </div>
+      )
+    );
+  }
+
+  function TimeBox(props) {
+    const [timeleft, setTimeleft] = useState("");
+
+    useEffect(() => {
+      let timer = setInterval(() => {
+        setTimeleft((new Date(props.closingTime)) - (new Date()));
+      }, 1000);
+
+      return function cleanup() {
+        clearInterval(timer);
+      }
+    });
+
+    return (
+      <div className='row sale-row'>
+        <div className='col-3 timeBox'>
+          <p className='timeHeader'>{Math.floor(timeleft / (1000 * 60 * 60 * 24))}</p>
+          <p className='timeBody'>DAYS</p>
+        </div>
+
+        <div className='col-3 timeBox'>
+          <p className='timeHeader'>{Math.floor((timeleft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))}</p>
+          <p className='timeBody'>HOURS</p>
+        </div>
+
+        <div className='col-3 timeBox'>
+          <p className='timeHeader'>{Math.floor((timeleft % (1000 * 60 * 60)) / (1000 * 60))}</p>
+          <p className='timeBody'>MINS</p>
+        </div>
+
+        <div className='col-3 timeBox'>
+          <p className='timeHeader'>{Math.floor((timeleft % (1000 * 60)) / 1000)}</p>
+          <p className='timeBody'>SECS</p>
+        </div>
       </div>
-    )
+    );
+  }
+
+  function SaleCard() {
+    const [tokenAmount, setTokenAmount] = useState("");
+    const [closingTime, setClosingTime] = useState("");
+    const [stage, setStage] = useState("");
+    const [rate, setRate] = useState();
+    const [totalSupply, setTotalSupply] = useState("");
 
 
-  );
+    function handleAmountInput(e) {
+      setTokenAmount(e.target.value);
+    }
 
-  function saleCard() {
+    useEffect(() => {
+
+      (async () => {
+        const crowdsaleData = await getCrowdsaleData();
+        setClosingTime(crowdsaleData.closingTime);
+        setStage(crowdsaleData.stage);
+        setRate(crowdsaleData.rate);
+        getTotalSupply();
+        setTotalSupply(await getTotalSupply());
+      })();
+
+    });
+
     return (
       <div className="saleCard">
         <div className='row sale-row'>
-          <p className="SaleHeader">Presale Ends in: </p>
+          <p className="SaleHeader">{stage} Ends in: </p>
         </div>
 
-        <div className='row sale-row'>
-          <div className='col-3 timeBox'>
-            <p className='timeHeader'>15</p>
-            <p className='timeBody'>DAYS</p>
-          </div>
-
-          <div className='col-3 timeBox'>
-            <p className='timeHeader'>02</p>
-            <p className='timeBody'>HOURS</p>
-          </div>
-
-          <div className='col-3 timeBox'>
-            <p className='timeHeader'>45</p>
-            <p className='timeBody'>MINS</p>
-          </div>
-
-          <div className='col-3 timeBox'>
-            <p className='timeHeader'>53</p>
-            <p className='timeBody'>SECS</p>
-          </div>
-        </div>
+        <TimeBox closingTime={closingTime} />
 
         <div className='row sale-row'>
           <p className='saleDesc'>Token Name: <span class="saleDescVal">JOVI</span></p>
-          <p className='saleDesc'>Presale Supply: <span class="saleDescVal">100,000</span></p>
-          <p className='saleDesc'>Presale Price: <span class="saleDescVal">1 ETH = 500</span></p>
+          <p className='saleDesc'>{stage} Supply: <span class="saleDescVal">{totalSupply}</span></p>
+          <p className='saleDesc'>{stage} Price: <span class="saleDescVal">1 ETH = {rate}</span></p>
         </div>
 
         <div className='row sale-row'>
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="Enter Amount of Token" />
+            <input onChange={handleAmountInput} value={tokenAmount} type="text" class="form-control" placeholder="Enter Amount of Token" />
           </div>
         </div>
 
@@ -193,7 +295,7 @@ function App() {
         </div>
 
         <div className="wallet-container">
-          {renderNotConnectedContainer()}
+          {Wallet()}
         </div>
 
 
@@ -212,7 +314,7 @@ function App() {
         </div>
 
         <div className="col-6">
-          {saleCard()}
+          {SaleCard()}
         </div>
 
         {Footer()}

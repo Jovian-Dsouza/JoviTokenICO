@@ -22,6 +22,10 @@
   padding-top: 3rem;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 .header {
   margin: 0;
   font-size: 2.5rem;
@@ -188,6 +192,10 @@
 .twitter-logo {
   width: 35px;
   height: 35px;
+}
+
+.wallet-address {
+  color: white;
 }
 
 .footer-text {
