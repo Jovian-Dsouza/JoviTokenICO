@@ -89,28 +89,6 @@ function App() {
     }
   }
 
-  const checkBalance = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(TOKEN_ADDRESS, JoviToken.abi, signer);
-
-        console.log("Going to pop wallet now to pay gas...")
-        let balance = await contract.balanceOf(currentAccount);
-        console.log("Balance ", ethers.utils.formatEther(balance));
-
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    }
-    catch (error) {
-      console.log(error)
-    }
-  }
-
   async function getTotalSupply() {
     try {
       const { ethereum } = window;
@@ -342,23 +320,29 @@ function App() {
     });
 
     return (
-      <div className="saleCard">
-        <div className='row sale-row'>
-          <p className="SaleHeader">{stage} Ends in: </p>
+
+      (currentAccount === "") ? (
+        ""
+      ) : (
+        <div className="col-6">
+          <div className="saleCard">
+            <div className='row sale-row'>
+              <p className="SaleHeader">{stage} Ends in: </p>
+            </div>
+
+            <TimeBox closingTime={closingTime} />
+
+            <div className='row sale-row'>
+              <p className='saleDesc'>Token Name: <span class="saleDescVal">JOVI</span></p>
+              <TokenSupply stage={stage} />
+              <p className='saleDesc'>{stage} Price: <span class="saleDescVal">1 ETH = {rate} JOVI</span></p>
+            </div>
+
+            <Buy min={investorMinAmount} max={investorMaxAmount} />
+
+          </div>
         </div>
-
-        <TimeBox closingTime={closingTime} />
-
-        <div className='row sale-row'>
-          <p className='saleDesc'>Token Name: <span class="saleDescVal">JOVI</span></p>
-          <TokenSupply stage={stage} />
-          <p className='saleDesc'>{stage} Price: <span class="saleDescVal">1 ETH = {rate} JOVI</span></p>
-        </div>
-
-        <Buy min={investorMinAmount} max={investorMaxAmount} />
-
-
-      </div>
+      )
     );
   }
 
@@ -392,9 +376,10 @@ function App() {
 
         </div>
 
-        <div className="col-6">
-          {SaleCard()}
-        </div>
+
+
+        {SaleCard()}
+
 
         {Footer()}
 
