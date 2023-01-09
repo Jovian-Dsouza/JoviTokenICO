@@ -66,7 +66,7 @@ function App() {
     }
   }
 
-  const buyToken = async () => {
+  const buyToken = async (amount) => {
     try {
       const { ethereum } = window;
 
@@ -75,10 +75,8 @@ function App() {
         const signer = provider.getSigner();
         const crowdsale = new ethers.Contract(CROWDSALE_ADDRESS, JoviTokenCrowdsale.abi, signer);
 
-        console.log("Going to pop wallet now to pay gas...")
-        let nftTxn = await crowdsale.buyTokens(currentAccount, { value: ethers.utils.parseEther("0.003") });
+        let nftTxn = await crowdsale.buyTokens(currentAccount, { value: ethers.utils.parseEther(amount) });
 
-        console.log("Mining...please wait.")
         await nftTxn.wait();
         console.log(`Mined, see transaction: https://goerli.etherscan.io/tx/${nftTxn.hash}`);
 
@@ -126,7 +124,7 @@ function App() {
         let decimals = await contract.decimals();
         totalSupply = ethers.utils.formatUnits(totalSupply, decimals);
         totalSupply = ethers.utils.commify(totalSupply);
-        
+
         return totalSupply;
 
       } else {
@@ -146,6 +144,7 @@ function App() {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const crowdsale = new ethers.Contract(CROWDSALE_ADDRESS, JoviTokenCrowdsale.abi, signer);
+        const contract = new ethers.Contract(TOKEN_ADDRESS, JoviToken.abi, signer);
 
         // closing time
         let closingTime = await crowdsale.closingTime();
@@ -164,7 +163,17 @@ function App() {
         let rate = await crowdsale.rate();
         rate = rate.toNumber();
 
-        return { closingTime, stage, rate };
+        // investor min max amount
+        let decimals = await contract.decimals();
+        let investorMinAmount = await crowdsale.investorMinCap();
+        investorMinAmount = ethers.utils.formatUnits(investorMinAmount, decimals);
+        investorMinAmount = investorMinAmount.toString();
+        let investorMaxAmount = await crowdsale.investorMaxCap();
+        investorMaxAmount = ethers.utils.formatUnits(investorMaxAmount, decimals);
+        investorMaxAmount = investorMaxAmount.toString();
+
+
+        return { closingTime, stage, rate, investorMinAmount, investorMaxAmount };
 
       } else {
         console.log("Ethereum object doesn't exist!");
@@ -192,7 +201,7 @@ function App() {
   }
 
   function TimeBox(props) {
-    const [timeleft, setTimeleft] = useState("");
+    const [timeleft, setTimeleft] = useState(0);
 
     useEffect(() => {
       let timer = setInterval(() => {
@@ -229,17 +238,49 @@ function App() {
     );
   }
 
-  function SaleCard() {
+  function Buy(props) {
     const [tokenAmount, setTokenAmount] = useState("");
-    const [closingTime, setClosingTime] = useState("");
-    const [stage, setStage] = useState("");
-    const [rate, setRate] = useState();
-    const [totalSupply, setTotalSupply] = useState("");
-
 
     function handleAmountInput(e) {
       setTokenAmount(e.target.value);
     }
+
+    function handleBuy(){
+      if(tokenAmount >= props.min && tokenAmount <= props.max){
+        buyToken(tokenAmount);
+      }
+    }
+
+    return (
+      
+      <div>
+          <div className='row sale-row'>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">ETH</span>
+                </div>
+      
+                <input type="number" min={props.min} max={props.max} step="any" onChange={handleAmountInput} value={tokenAmount} class="form-control" placeholder="Enter Amount" />
+      
+            </div>
+          </div>
+    
+          <div className='row sale-row'>
+            <button onClick={handleBuy} className="cta-button connect-wallet-button">
+              Buy JoviToken
+            </button>
+          </div>
+      </div>
+    );
+  }
+
+  function SaleCard() {
+    const [closingTime, setClosingTime] = useState("");
+    const [stage, setStage] = useState("");
+    const [rate, setRate] = useState();
+    const [totalSupply, setTotalSupply] = useState("");
+    const [investorMinAmount, setInvestorMinAmount] = useState("");
+    const [investorMaxAmount, setInvestorMaxAmount] = useState("");
 
     useEffect(() => {
 
@@ -248,6 +289,8 @@ function App() {
         setClosingTime(crowdsaleData.closingTime);
         setStage(crowdsaleData.stage);
         setRate(crowdsaleData.rate);
+        setInvestorMinAmount(crowdsaleData.investorMinAmount);
+        setInvestorMaxAmount(crowdsaleData.investorMaxAmount);
         getTotalSupply();
         setTotalSupply(await getTotalSupply());
       })();
@@ -265,20 +308,12 @@ function App() {
         <div className='row sale-row'>
           <p className='saleDesc'>Token Name: <span class="saleDescVal">JOVI</span></p>
           <p className='saleDesc'>{stage} Supply: <span class="saleDescVal">{totalSupply}</span></p>
-          <p className='saleDesc'>{stage} Price: <span class="saleDescVal">1 ETH = {rate}</span></p>
+          <p className='saleDesc'>{stage} Price: <span class="saleDescVal">1 ETH = {rate} JOVI</span></p>
         </div>
 
-        <div className='row sale-row'>
-          <div class="input-group">
-            <input onChange={handleAmountInput} value={tokenAmount} type="text" class="form-control" placeholder="Enter Amount of Token" />
-          </div>
-        </div>
-
-        <div className='row sale-row'>
-          <button onClick={buyToken} className="cta-button connect-wallet-button">
-            Buy JoviToken
-          </button>
-        </div>
+        <Buy min={investorMinAmount} max={investorMaxAmount} />
+        
+        
       </div>
     );
   }

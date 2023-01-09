@@ -136,15 +136,30 @@
 .form-control {
   border-radius: 5px;
   background:  #2f586a;
-  width: 100%;
+  color: #a09c9c; 
 }
 
 .form-control:focus {
   border-radius: 5px;
   background:  #2f586a;
-  width: 100%;
   color: #a09c9c; 
 }
+
+.form-control:invalid {
+  color: #e58585;
+}
+
+.form-control[type=number]::-webkit-inner-spin-button,
+.form-control[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-group-text {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 
 .cta-button {
   height: 45px;
