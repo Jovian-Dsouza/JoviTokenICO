@@ -218,23 +218,23 @@ function App() {
     });
 
     return (
-      <div className='row sale-row'>
-        <div className='col-3 timeBox'>
+      <div className='row sale-row timeBox-row'>
+        <div className='col-3 timeBox mx-auto'>
           <p className='timeHeader'>{Math.floor(timeleft / (1000 * 60 * 60 * 24))}</p>
           <p className='timeBody'>DAYS</p>
         </div>
 
-        <div className='col-3 timeBox'>
+        <div className='col-3 timeBox mx-auto'>
           <p className='timeHeader'>{Math.floor((timeleft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))}</p>
           <p className='timeBody'>HOURS</p>
         </div>
 
-        <div className='col-3 timeBox'>
+        <div className='col-3 timeBox mx-auto'>
           <p className='timeHeader'>{Math.floor((timeleft % (1000 * 60 * 60)) / (1000 * 60))}</p>
           <p className='timeBody'>MINS</p>
         </div>
 
-        <div className='col-3 timeBox'>
+        <div className='col-3 timeBox mx-auto'>
           <p className='timeHeader'>{Math.floor((timeleft % (1000 * 60)) / 1000)}</p>
           <p className='timeBody'>SECS</p>
         </div>
@@ -324,7 +324,7 @@ function App() {
       (currentAccount === "") ? (
         ""
       ) : (
-        <div className="col-6">
+        <div className="col-lg-6">
           <div className="saleCard">
             <div className='row sale-row'>
               <p className="SaleHeader">{stage} Ends in: </p>
@@ -365,7 +365,7 @@ function App() {
       </nav>
 
       <div className="row app-row app-container">
-        <div className="col-6">
+        <div className="col-lg-6">
           <p className="sub-text">
             Buy JoviToken Now, To Get Rich In The Future.
           </p>
